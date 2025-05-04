@@ -94,7 +94,7 @@ class Labyrinthe :
         plt.show()
 
 if __name__ == "__main__":
-    lab = Labyrinthe(10, 15)
-    lab.creation_labyrinthe()
-    lab.afficher_labyrinthe()
-
+    pass
+    # lab = Labyrinthe(10, 15)
+    # lab.creation_labyrinthe()
+    # lab.afficher_labyrinthe()
