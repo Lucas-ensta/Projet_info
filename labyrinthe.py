@@ -1,5 +1,7 @@
-import numpy as np 
-import matplotlib.pyplot as plt 
+import numpy as np
+import matplotlib.pyplot as plt
+from case import Case
+from simulation import *
 
 class Labyrinthe :
     """
@@ -11,11 +13,14 @@ class Labyrinthe :
         :param longueur: nombre de colonnes des matrices
         :param largeur: nombre de lignes des matrices
         """
-        self.longueur = longueur
-        self.largeur = largeur
+        self.longueur = longueur #Longueur du labyrinthe
+        self.largeur = largeur #Hauteur du labyrinthe
         self.cases = np.arange(longueur*largeur).reshape(largeur,longueur)
-        self.murs_v = np.ones((largeur,longueur-1),dtype=int)
-        self.murs_h = np.ones((largeur-1,longueur),dtype=int)
+        self.murs_v = np.ones((largeur,longueur-1),dtype=int) #Matrice initiale des murs verticuax
+        self.murs_h = np.ones((largeur-1,longueur),dtype=int)  #Matrice initiale des murs horizontaux
+        self.etat_case = np.array([[Case((i, j)) for i in range(self.longueur)] for j in range(self.largeur)]) #Tableau d'instance de case permettant de renseigner la fourmi sur ce qu'il y a sur la case
+        self.figure = None
+        self.ax = None
 
     def creation_labyrinthe(self):
         """
@@ -39,7 +44,6 @@ class Labyrinthe :
                     self.cases[self.cases == old_value] = new_value
                     self.murs_h[x, y] = 0  # Le mur ne peut plus être choisi
                     murs_retires += 1
-                    print(self.cases)
 
             else :
                 x = np.random.randint(0, self.murs_v.shape[0])
@@ -55,9 +59,6 @@ class Labyrinthe :
                     self.cases[self.cases == old_value] = new_value
                     self.murs_v[x, y] = 0  # Le mur ne peut plus être choisi
                     murs_retires += 1
-                    print(self.cases)
-        print("La grille des murs verticaux est", self.murs_v,self.murs_v.shape[0],self.murs_v.shape[1])
-        print("La grille des murs horizontaux est", self.murs_h,self.murs_h.shape[0],self.murs_h.shape[1])
 
         return self.murs_v, self.murs_h, self.cases
 
@@ -91,10 +92,112 @@ class Labyrinthe :
 
         ax.set_aspect('equal')
         ax.axis('off')
-        plt.show()
+        self.figure = fig
+        self.ax = ax
 
-if __name__ == "__main__":
-    pass
-    # lab = Labyrinthe(10, 15)
-    # lab.creation_labyrinthe()
-    # lab.afficher_labyrinthe()
+    def placer_fourmiliere_aleatoire(self):
+        """
+        Méthode permettant de placer la fourmillière sur une case du labyrinthe
+        :return: La position de la fourmillière
+        """
+        while True:
+            x = np.random.randint(0, self.murs_h.shape[0])  #Choix d'un x au hasard
+            y = np.random.randint(0, self.murs_h.shape[1])  #choix d'un y au hasard
+            if (self.etat_case[x][y].nourriture == False) :  # Vérifie que ce n'est pas le puit de nourriture
+                self.etat_case[x][y].est_fourmilliere()  #Définit la case comme fourmillière
+                position = (x,y)
+                return position
+
+    def placer_nourriture_aleatoire(self):
+        """
+        Méthode permettant de placer la nourriture sur une case du labyrinthe
+        :return: La position du puit de nourriture
+        """
+        while True:
+            x = np.random.randint(0, self.murs_h.shape[0]) #Choix d'un x au hasard
+            y = np.random.randint(0, self.murs_h.shape[1])  #Choix d'un y au hasard
+            if (self.etat_case[x][y].fourmilliere == False) :  # Vérifie que ce n'est pas le puit de nourriture
+                self.etat_case[x][y].est_nourriture()
+                position = (x,y)
+                return position
+
+    def afficher_fourmilliere(self,position):
+        """
+        Méthode permettant l'affichage de la fourmillière
+        :param position: La position de la fourmillière
+        :return: Nothing
+        """
+        ax = self.figure.gca()
+        x, y = position
+        ax.plot(y + 0.5, self.largeur - x - 0.5, 'go', markersize=15)  # cercle vert
+        ax.text(y + 0.5, self.largeur - x - 0.5, "F", color="white", ha="center", va="center", fontsize=10, weight="bold")  # lettre F
+
+    def afficher_nourriture(self,position):
+        """
+        Méthode permettant l'affichage du puit de nourriture
+        :param position: La position du puit de nourriture
+        :return: Nothing
+        """
+        ax = self.figure.gca()
+        x, y = position
+        ax.plot(y + 0.5, self.largeur - x - 0.5, 'ro', markersize=15)  # cercle vert
+        ax.text(y + 0.5, self.largeur - x - 0.5, "N", color="white", ha="center", va="center", fontsize=10, weight="bold")  # lettre N
+
+    def afficher_fourmi(self, position):
+        x, y = position
+        self.ax.plot(y + 0.5, self.largeur - x - 0.5, 'ko', markersize=8)  # 'ko' pour un cercle noir
+        self.ax.text(y + 0.5, self.largeur - x - 0.5, "🐜", ha='center', va='center', fontsize=8) #Fourmi
+
+    def afficher_fourmis(self, fourmis):
+        for fourmi in fourmis:
+            x, y = fourmi.position
+            self.ax.plot(y + 0.5, self.largeur - x - 0.5, 'ko', markersize=8)  # 'ko' pour un cercle noir
+            self.ax.text(y + 0.5, self.largeur - x - 0.5, "🐜", ha='center', va='center', fontsize=8)  # Fourmi
+
+    def mise_a_jour(frame):
+        # Effacer la figure précédente
+        labyrinthe.ax.clear()
+
+        # Redessiner le labyrinthe
+        labyrinthe.afficher_labyrinthe()
+
+        # Afficher la fourmilière et la nourriture
+        labyrinthe.afficher_fourmilliere(sim.position_fourmiliere)
+        labyrinthe.afficher_nourriture(sim.puit_nourriture)
+
+        # Mettre à jour les fourmis à chaque tour
+        sim.etape()  # Avance d'un tour dans la simulation
+        labyrinthe.afficher_fourmis(sim.fourmis)
+
+        plt.title(f"Tour {sim.tour}")  # Affiche le tour en cours
+        return labyrinthe.ax
+
+
+if __name__ == '__main__':
+    labyrinthe = Labyrinthe(10, 5)
+    labyrinthe.creation_labyrinthe()
+    labyrinthe.afficher_labyrinthe()
+
+    sim = Simulation(labyrinthe, 4, 2)
+
+    for i in range (6) : 
+        sim.etape()
+    
+    position_f = sim.position_fourmiliere
+    labyrinthe.afficher_fourmilliere(position_f)
+
+    x, y = position_f
+    print("Fourmilière à :", position_f)
+    print("Est une fourmilière ?", labyrinthe.etat_case[x][y].fourmilliere)
+
+    position_n = sim.puit_nourriture
+    labyrinthe.afficher_nourriture(position_n)
+
+    x_n, y_n = position_n
+    print("Puit de nourriture à :", position_n)
+    print("Est un puit de nourriture ?", labyrinthe.etat_case[x_n][y_n].nourriture)
+
+    x_f,y_f = (3,5)
+    labyrinthe.afficher_fourmi((x_f,y_f))
+
+    plt.show()

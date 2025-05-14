@@ -8,8 +8,9 @@ class Case :
 
     def __init__(self,position):
         self.position = position
-        self.pheromones = {"attractif" : 0, "répulsif" : 0} #Il existe seulement deux types de phéromones
-        self.nourriture = False
+        self.pheromones = {"attractif" : 0, "repulsif" : 0} #Il existe seulement deux types de phéromones
+        self.nourriture = False #Si True, renseigne le lieu du puit de nourriture
+        self.fourmilliere = False #Si True, renseigne le lieu de la fourmillière
 
     def ajouter_pheromone(self, type_pheromones, quantity):
         """
@@ -32,20 +33,20 @@ class Case :
         for type_pheromone in self.pheromones:
             self.pheromones[type_pheromone] = max(0, self.pheromones[type_pheromone] * (1 - rate))
 
-    def poser_nourriture(self):
+    def est_nourriture(self):
         """
-        Méthode permettant de dire qu'il y a de la nourriture sur une case
+        Méthode permettant de dire qu'il y a de la nourriture sur une case : c'est le puit de nourriture
         :return: Nothing
         """
         self.nourriture = True
 
-    def retirer_nourriture(self):
-        """
-        Méthode permettant de dire qu'il n'y a pas de nourriture sur une case
-        :return:
-        """
-        self.nourriture = False
 
+    def est_fourmilliere(self):
+        """
+        Méthode permettant de positionner la fourmillière sur une case
+        :return: Nothing
+        """
+        self.fourmilliere = True
 
 
     def contient_nourriture(self):
@@ -61,4 +62,3 @@ class Case :
         :return: Une copie du dictionnaire des phéromones
         """
         return(self.pheromones.copy())
-

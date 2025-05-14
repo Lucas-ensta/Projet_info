@@ -1,30 +1,17 @@
-"""
-Modifs : 
-    __init__ : ajout de comportement comme argument quand on intsancie une fourmi 
-    methode conversion_str_int 
-    methode percevoir_pheromones
-    methode percevoir_nourriture
-    methode se_deplacer (sans accent)
-
-
-
-"""
-
-
-
 import numpy as np
-from labyrinthe import Labyrinthe
-from comportement import Comportement
+from labyrinthe import *
+from comportement import *
+
 
 class Fourmi :
     """
     Cette classe gère les fourmis, leurs propriétés et tout ce qu'il est possible de faire
     """
 
-    def __init__(self,position, comportement):
+    def __init__(self,position,comportement):
         self.position = position
         self.memoire = []
-        self.comportement = comportement # Ceci est une instance des classe comportement (Exploration, Suivi...) Ex : fourmi 1 = Fourmi((x,y), Exploration())
+        self.comportement = comportement if comportement else Exploration() #Instance des classes comportement
 
     def chemins_possible(self,labyrinthe):
         """
@@ -101,37 +88,35 @@ class Fourmi :
                     directions_possibles.append("gauche")
 
         return(directions_possibles)
-    
 
     def percevoir_pheromone(self,labyrinthe):
         """
         Cette méthode permet de percevoir les phéromones qui se trouvent sur les cases adjacentes accessibles
-        :param labyrinthe:
-        :return: Dictionnaire des positions avec phéromones
+        :param labyrinthe : Le labyrinthe créé avec les cases
+        :return: Dictionnaire des positions adjacentes avec la quantité de phéromones attractives
         """
         L = {"haut": None, "bas": None, "gauche": None, "droite": None}
-        chemins = self.chemins_possible(labyrinthe) #liste des directions possible sous forme de str
-        for c in chemins : 
-            i,j = self.conversion_str_int(c) 
+        chemins = self.chemins_possible(labyrinthe)  # liste des directions possible sous forme de str
+        for c in chemins:
+            i, j = self.conversion_str_int(c)
             pheromone = labyrinthe.etat_case.pheromones[i][j]
             val_case = pheromone["attractif"] - pheromone["repulsif"]
             L[c] = val_case
-        return L 
+        return L
 
-
-    def percevoir_nourriture(self, labyrinthe):
+    def percevoir_nourriture(self,labyrinthe):
         """
         Cette méthode permet de vérifier si il y a de la nourriture sur les cases voisines
-        :param labyrinthe:
-        :return: Dictionnaire des positions adjacentes avec la présence ou non de nourriture 
+        :param labyrinthe : Le labyrinthe créée avec les cases
+        :return : Dictionnaire des positions adjacentes avec la quantité de nourriture qui s'y trouve
         """
         L = {"haut": None, "bas": None, "gauche": None, "droite": None}
-        chemins = self.chemins_possible(labyrinthe) #liste des directions possible sous forme de str
-        for c in chemins : 
-            i,j = self.conversion_str_int(c) 
+        chemins = self.chemins_possible(labyrinthe)  # liste des directions possible sous forme de str
+        for c in chemins:
+            i, j = self.conversion_str_int(c)
             val_case = labyrinthe.etat_case.nourriture[i][j]
             L[c] = val_case
-        return L 
+        return L
 
     def deposer_pheromone (self,labyrinthe,type_pheromones,quantite = 1):
         """
@@ -140,41 +125,52 @@ class Fourmi :
         :param quantite: La quantité de phéromones
         :return: Nothing
         """
-        i,j = self.position
-        labyrinthe.etat_case[i][j].ajouter_pheromone(type_pheromones, quantite)
+        pass
 
-    def se_deplacer(self, labyrinthe):
+    def se_deplacer(self,labyrinthe):
         """
         Méthode permettant à la fourmi d'avancer d'une case dans la direction qu'elle souhaite
-        :param new_position: Nouvelle position (str)
-        :return:
+        :param labyrinthe : le labyrinthe créé
+        :return: Nothing
         """
-        new_position = self.comportement.choisir_direction(self, labyrinthe)
-        self.memoire.append(self.position)
-        self.position = self.conversion_str_int(new_position)
-        
-    def conversion_str_int(self, str_direction): 
+        new_position = self.comportement.choisir_direction(self, labyrinthe) #Nouvelle position qui dépend du comportement choisi
+        if len(self.memoire) == 0: #Si elle n'a rien dans sa mémoire
+            self.memoire.append(self.position) #On stocke dans sa mémoire sa position, avant qu'elle ne se déplace
+        elif len(self.memoire) == 1: #Si elle a déja une position
+            self.memoire.pop() #On supprime la position
+            self.memoire.append(self.position) #On stocke dans sa mémoire sa position, avant qu'elle ne se déplace
+        self.position = self.conversion_str_int(new_position) #La position est actualisée à sa nouvelle position
+
+    def conversion_str_int(self, str_direction):
         """
         Cette méthode permet de connaitre les coordonées des cases adjacentes à la fourmi, utiles pour s'y déplacer si on sait dans quelle direction aller
-        :param direction sous forme de string:
-        :return: coordonée (couple d'entier) de la case de la direction donnée 
+        :param str_direction : La, ou les, direction sous forme de string:
+        :return: Les coordonées (couple d'entier) de la case de la direction donnée
         """
         i, j = self.position
         if str_direction == "haut":
-            return (i-1, j)
+            return (i - 1, j)
         if str_direction == "bas":
-            return (i+1, j)
-        if str_direction == "gauche": 
-            return (i, j-1)
+            return (i + 1, j)
+        if str_direction == "gauche":
+            return (i, j - 1)
         if str_direction == "droite":
-            return (i, j+1)
-
-
-    def cerveau(self):
-        pass
+            return (i, j + 1)
 
     def decider_comportement (self):
-        pass
+        chemins = self.chemins_possible(labyrinthe)
+        if len(chemins) == 1: 
+            self.comportement = Retour()
+            
+
+
+
+
+
+
+
+
+
 
 
 
