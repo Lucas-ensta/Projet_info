@@ -71,52 +71,9 @@ class Simulation:
         self.fourmis = nouvelles_fourmis
         # 6. Dépôt de phéromones
         for fourmi in self.fourmis:
-            fourmi.deposer_pheromone(self.labyrinthe, type_pheromones="attractif", quantite=1)
+            fourmi.deposer_pheromone(self.labyrinthe, quantite=1)
         # 7. Incrément du compteur de tours
         self.tour += 1
 
     
 
-
-"""
-    def etape(self):
-        for i in range(self.nb_iterations):
-            self.generer_fourmi()
-            for fourmi in self.fourmis:
-                self.labyrinthe.afficher_fourmi(fourmi.position)
-                fourmi.se_deplacer(self.labyrinthe)
-            plt.pause(1)
-        plt.show()
-
-    def etape_test(self):
-        fig, ax = plt.subplots()
-        self.labyrinthe.afficher_labyrinthe()  # Affichage du labyrinthe
-        self.labyrinthe.afficher_fourmilliere(self.position_fourmiliere)
-        self.labyrinthe.afficher_nourriture(self.puit_nourriture)
-
-        # Préparation du nuage de points pour les fourmis
-        scatter_fourmis = ax.scatter([], [], c='red', s=200,marker='o')  # s = taille
-
-        for i in range(self.nb_iterations):
-            self.tour = i
-            self.generer_fourmi()
-
-            # Déplacement de chaque fourmi
-            for fourmi in self.fourmis:
-                fourmi.se_deplacer(self.labyrinthe)
-
-            # Mise à jour graphique des positions
-            positions = [f.position for f in self.fourmis]
-            if positions:
-                # matplotlib attend (x, y), soit (colonne, ligne)
-                x = [pos[1] + 0.5 for pos in positions]  # +0.5 pour centrer le point
-                y = [self.labyrinthe.largeur - pos[0] - 0.5 for pos in positions]
-                ax.scatter.set_offsets(np.c_[x, y])  # combine x et y
-            else:
-                ax.scatter.set_offsets([])
-
-            scatter_fourmis.set_offsets(list(zip(x, y)))
-            plt.pause(0.5)  # Pause entre les frames
-
-        plt.show()
-"""

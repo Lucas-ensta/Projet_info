@@ -127,7 +127,7 @@ class Fourmi :
         :return: Nothing
         """
         i, j = self.position
-        type = self.comportement.choisir_pheromone(labyrinthe) if self.comportement.choisir_pheromone(labyrinthe) else 0
+        type = self.comportement.choisir_pheromone(self, labyrinthe) if self.comportement.choisir_pheromone(self, labyrinthe) else 0
         if type != 0 : 
             labyrinthe.etat_case[i][j].pheromones[type] += quantite
 
