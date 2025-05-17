@@ -27,7 +27,7 @@ class Exploration(Comportement):
         :return: La direction choisie sous forme de str
         """
 
-        nourriture = fourmi.percevoir_nourriture() #aller à la nourriture si il y en a 
+        nourriture = fourmi.percevoir_nourriture(labyrinthe) #aller à la nourriture si il y en a 
         for x in nourriture.keys() :
             if nourriture[x] is not None :
                 return x
@@ -88,7 +88,7 @@ class Suivi(Comportement):
         :return: la direction choisie sous forme de str
         """
 
-        nourriture = fourmi.percevoir_nourriture() #aller à la nourriture si il y en a 
+        nourriture = fourmi.percevoir_nourriture(labyrinthe) #aller à la nourriture si il y en a 
         for x in nourriture.keys() :
             if nourriture[x] is not None :
                 return x
@@ -125,7 +125,7 @@ class Suivi(Comportement):
 
 class Retour(Comportement):
 
-    def chosir_direcetion(self, fourmi, labyrinthe):
+    def choisir_direction(self, fourmi, labyrinthe):
         """
         Permet à la fourmi de sortir d'un cul de sac 
         :param fourmi : La fourmi
@@ -135,7 +135,7 @@ class Retour(Comportement):
         chemins = fourmi.chemins_possible(labyrinthe) 
         i, j = fourmi.memoire[0]
         for c in chemins : 
-            n, m = self.convertion_str_int(c)
+            n, m = self.conversion_str_int(c)
             if (i, j) == (n, m) :
                 chemins.remove(c)
         
@@ -143,7 +143,7 @@ class Retour(Comportement):
             return chemins[0]
         
         elif len(chemins) > 1 : #On est sorti du cul de sac, repasse en mode exploration 
-            return chemins[random.randint(0, len(chemins))]
+            return chemins[random.randint(0, len(chemins)-1)]
 
     def choisir_pheromone(self, fourmi, labyrinthe):
             """
@@ -153,9 +153,8 @@ class Retour(Comportement):
             :param labyrinthe: Le labyrinthe
             :return: le type de pherome à déposer 
             """
-            comportement = fourmi.comportement
-            if comportement == Retour() : 
-                return "repulsif"
+
+            return "repulsif"
 
 
 
