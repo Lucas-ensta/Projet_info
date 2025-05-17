@@ -12,6 +12,7 @@ class Fourmi :
         self.position = position
         self.memoire = []
         self.comportement = comportement if comportement else Exploration() #Instance des classes comportement
+        self.distance = 0
 
     def chemins_possible(self,labyrinthe):
         """
@@ -114,18 +115,21 @@ class Fourmi :
         chemins = self.chemins_possible(labyrinthe)  # liste des directions possible sous forme de str
         for c in chemins:
             i, j = self.conversion_str_int(c)
-            val_case = labyrinthe.etat_case.nourriture[i][j]
+            val_case = labyrinthe.etat_case[i][j].nourriture
             L[c] = val_case
         return L
 
-    def deposer_pheromone (self,labyrinthe,type_pheromones,quantite = 1):
+    def deposer_pheromone (self,labyrinthe, quantite = 1):
         """
         Méthode permettant à la fourmi d'ajouter une certaine quantité d'un certain type de phéromones sur la case où elle se trouve
         :param type_pheromones: Le type de phéromones
         :param quantite: La quantité de phéromones
         :return: Nothing
         """
-        pass
+        i, j = self.position
+        type = self.comportement.choisir_pheromone(labyrinthe) if self.comportement.choisir_pheromone(labyrinthe) else 0
+        if type != 0 : 
+            labyrinthe.etat_case[i][j].pheromones[type] += quantite
 
     def se_deplacer(self,labyrinthe):
         """
@@ -133,6 +137,7 @@ class Fourmi :
         :param labyrinthe : le labyrinthe créé
         :return: Nothing
         """
+        self.distance += 1
         new_position = self.comportement.choisir_direction(self, labyrinthe) #Nouvelle position qui dépend du comportement choisi
         if len(self.memoire) == 0: #Si elle n'a rien dans sa mémoire
             self.memoire.append(self.position) #On stocke dans sa mémoire sa position, avant qu'elle ne se déplace
@@ -158,10 +163,28 @@ class Fourmi :
             return (i, j + 1)
 
     def decider_comportement (self):
+        """
+        Methode permettant à la fourmi de changer de comportement en fonction des situations qu'elle renctre dans le labyrinthe 
+        """
         chemins = self.chemins_possible(labyrinthe)
         if len(chemins) == 1: 
             self.comportement = Retour()
+
+        if self.comportement == Exploration():
+            if self.distance > 20 : 
+                self.comprtement = Suivi()
+        
+        if self.comportement == Retour():
+            chemins = self.chemins_possible(labyrinthe) 
+            i, j = self.memoire[0]
+            for c in chemins : 
+                n, m = self.convertion_str_int(c)
+                if (i, j) == (n, m) :
+                    chemins.remove(c)
             
+            if len(chemins) > 1 :  #la fourmi est sorti du cul de sac 
+                self.comportement == Exploration() 
+
 
 
 
