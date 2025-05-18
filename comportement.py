@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from fourmi import *
+
 import random
+
+from labyrinthe import *
 
 class Comportement(ABC):
     """
@@ -26,17 +28,22 @@ class Exploration(Comportement):
         :param labyrinthe: Le labyrinthe
         :return: La direction choisie sous forme de str
         """
-
+        
         nourriture = fourmi.percevoir_nourriture(labyrinthe) #aller à la nourriture si il y en a 
         for x in nourriture.keys() :
-            if nourriture[x] is not None :
+            if nourriture[x] is True :
+                
                 return x
 
         chemins = fourmi.chemins_possible(labyrinthe)  # liste des directions possible sous forme de str
+        
+        
         chemin_choisi = []
 
         if len(chemins) == 1: # Attention cul-de-sac, passer en mode Retour et déposer une phéromnes repulsive  
+            print("cul de sac")
             return chemins[0]
+
 
         else:
             for c in chemins:
@@ -53,9 +60,16 @@ class Exploration(Comportement):
                     i, j = fourmi.conversion_str_int(c)
                     pheromone = labyrinthe.etat_case[i][j].pheromones
                     chemin_choisi.append((c, pheromone["repulsif"]))
-            chemin_choisi_final = min(chemin_choisi, key=lambda x: x[1])[0]  # retourne la direction (str) (on prends le chemin le moins attractif ou le moins répulsif)
+
+            # On récupère la valeur de case minimale 
+            min_val = min(chemin_choisi, key=lambda x: x[1])[1]
+            # On garde toutes les directions ayant cette valeur
+            meilleurs_chemins = [c for c, val in chemin_choisi if val == min_val]
+            # On en choisit un au hasard
+            chemin_choisi_final = random.choice(meilleurs_chemins)
             
-        return chemin_choisi_final
+            
+        return  chemin_choisi_final
     
     def choisir_pheromone(self, fourmi, labyrinthe):
         """
@@ -90,7 +104,7 @@ class Suivi(Comportement):
 
         nourriture = fourmi.percevoir_nourriture(labyrinthe) #aller à la nourriture si il y en a 
         for x in nourriture.keys() :
-            if nourriture[x] is not None :
+            if nourriture[x] is True :
                 return x
             
         chemins = fourmi.chemins_possible(labyrinthe)  # liste des directions possible sous forme de str
@@ -101,11 +115,16 @@ class Suivi(Comportement):
             for c in chemins:
                 i, j = fourmi.conversion_str_int(c)
                 pheromone = labyrinthe.etat_case[i][j].pheromones  # c'est un dictionnaire avec 2 clés
-                nourriture = 1000 if labyrinthe.etat_case[i][j].nourriture else 0
-                val_case = nourriture + pheromone["attractif"] - pheromone["repulsif"]  # on regarde l'attractivité de la case
+                
+                val_case =  pheromone["attractif"] - pheromone["repulsif"]  # on regarde l'attractivité de la case
                 chemin_choisi.append((c, val_case))
-            chemin_final = max(chemin_choisi, key=lambda x: x[1])[0]  # retourne la direction (str) du le chemin le plus attractif)
-        return chemin_final
+
+            # Choix aléatoire parmi les meilleurs chemins (évite l'oscillation)
+            max_val = max(chemin_choisi, key=lambda x: x[1])[1]
+            meilleurs_chemins = [c for c, val in chemin_choisi if val == max_val]
+            choix = random.choice(meilleurs_chemins)
+        return choix
+
 
     def choisir_pheromone(self, fourmi, labyrinthe):
             """
@@ -135,7 +154,7 @@ class Retour(Comportement):
         chemins = fourmi.chemins_possible(labyrinthe) 
         i, j = fourmi.memoire[0]
         for c in chemins : 
-            n, m = self.conversion_str_int(c)
+            n, m = fourmi.conversion_str_int(c)
             if (i, j) == (n, m) :
                 chemins.remove(c)
         
@@ -157,6 +176,20 @@ class Retour(Comportement):
             return "repulsif"
 
 
+if __name__ == "__main__":
+    lab = Labyrinthe(10, 10)
+    lab.creation_labyrinthe()
+    lab.afficher_labyrinthe()
+    sim = Simulation(lab, 4, 2)
+
+    for _ in range (12):
+        sim.etape()
+    
+    lab.afficher_fourmilliere(sim.position_fourmiliere)
+    lab.afficher_nourriture(sim.puit_nourriture)
+    print(sim.fourmis)
+    lab.afficher_fourmis(sim.fourmis)
+    plt.show()
 
 
 

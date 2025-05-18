@@ -1,6 +1,5 @@
-import numpy as np
 from labyrinthe import *
-from comportement import *
+from comportement import Exploration, Suivi, Retour
 
 
 class Fourmi :
@@ -21,73 +20,16 @@ class Fourmi :
         """
         (i,j) = self.position
         directions_possibles = []
-        #Si on n'est pas sur une case adjacente à un bord
-        if i != 0 and i != labyrinthe.murs_h.shape[0] and j != labyrinthe.murs_v.shape[1] and j!= 0:
-            if labyrinthe.murs_v[i,j-1] == 0 and j != 0: #Si on a pas de mur à gauche, on ajoute la direction
-                directions_possibles.append("gauche")
-            if labyrinthe.murs_v[i,j] == 0 and j != labyrinthe.murs_v.shape[1]: #Si on a pas de mur à droite, on ajoute la direction
-                directions_possibles.append("droite")
-            if labyrinthe.murs_h[i-1,j] == 0 and i != 0: #Si on a pas de mur au dessus, on ajoute la direction
-                directions_possibles.append("haut")
-            if labyrinthe.murs_h[i,j] == 0 and i != labyrinthe.murs_h.shape[0]: #Si on a pas de mur à gauche, on ajoute la direction
-                directions_possibles.append("bas")
-
-        #Si on est sur une case adjacente à un bord
-        if i == 0 :  #Bord supérieur
-            if j == 0 : #Coin en haut à gauche
-                if labyrinthe.murs_v[i,j] == 0 : #Si on a pas de mur à droite, on ajoute la direction
-                    directions_possibles.append("droite")
-                if labyrinthe.murs_h[i,j] == 0 : #Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("bas")
-            elif j == labyrinthe.murs_v.shape[1]: #Coin en haut à droite
-                if labyrinthe.murs_v[i, j - 1] == 0 :  # Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("gauche")
-                if labyrinthe.murs_h[i,j] == 0 : #Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("bas")
-            else:
-                if labyrinthe.murs_v[i, j - 1] == 0:  # Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("gauche")
-                if labyrinthe.murs_v[i, j] == 0: # Si on a pas de mur à droite, on ajoute la direction
-                    directions_possibles.append("droite")
-                if labyrinthe.murs_h[i, j] == 0: # Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("bas")
-
-        if i == labyrinthe.murs_h.shape[0] :  #Bord inférieur
-            if j == 0 : #Coin en bas à gauche
-                if labyrinthe.murs_v[i,j] == 0 : #Si on a pas de mur à droite, on ajoute la direction
-                    directions_possibles.append("droite")
-                if labyrinthe.murs_h[i - 1, j] == 0 :  # Si on a pas de mur au dessus, on ajoute la direction
-                    directions_possibles.append("haut")
-            elif j == labyrinthe.murs_v.shape[1]: #Coin en bas à droite
-                if labyrinthe.murs_v[i, j - 1] == 0 :  # Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("gauche")
-                if labyrinthe.murs_h[i - 1, j] == 0 :  # Si on a pas de mur au dessus, on ajoute la direction
-                    directions_possibles.append("haut")
-            else:
-                if labyrinthe.murs_v[i, j - 1] == 0:  # Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("gauche")
-                if labyrinthe.murs_v[i, j] == 0: # Si on a pas de mur à droite, on ajoute la direction
-                    directions_possibles.append("droite")
-                if labyrinthe.murs_h[i - 1, j] == 0 :  # Si on a pas de mur au dessus, on ajoute la direction
-                    directions_possibles.append("haut")
-
-        #Si on est sur le bord gauche ou droit
-        if i != 0 and i != labyrinthe.murs_h.shape[0] :
-            if j == 0 :
-                if labyrinthe.murs_v[i, j] == 0 and j != labyrinthe.murs_v.shape[1]:  # Si on a pas de mur à droite, on ajoute la direction
-                    directions_possibles.append("droite")
-                if labyrinthe.murs_h[i - 1, j] == 0 and i != 0:  # Si on a pas de mur au dessus, on ajoute la direction
-                    directions_possibles.append("haut")
-                if labyrinthe.murs_h[i, j] == 0 and i != labyrinthe.murs_h.shape[0]:  # Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("bas")
-            elif j == labyrinthe.murs_v.shape[1] :
-                if labyrinthe.murs_h[i - 1, j] == 0 and i != 0:  # Si on a pas de mur au dessus, on ajoute la direction
-                    directions_possibles.append("haut")
-                if labyrinthe.murs_h[i, j] == 0 and i != labyrinthe.murs_h.shape[0]:  # Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("bas")
-                if labyrinthe.murs_v[i, j - 1] == 0:  # Si on a pas de mur à gauche, on ajoute la direction
-                    directions_possibles.append("gauche")
-
+        #Si on n'est pas en haut et qu'il y a pas de mur au dessus 
+        if i != 0 and labyrinthe.murs_h[i-1, j] == 0:
+            directions_possibles.append("haut")
+        if i != labyrinthe.largeur-1 and labyrinthe.murs_h[i,j] == 0 :
+            directions_possibles.append("bas")
+        if j != 0 and labyrinthe.murs_v[i,j-1] == 0 :
+            directions_possibles.append("gauche")
+        if j != labyrinthe.longueur-1 and labyrinthe.murs_v[i,j] == 0 :
+            directions_possibles.append("droite")
+    
         return(directions_possibles)
 
     def percevoir_pheromone(self,labyrinthe):
@@ -126,7 +68,7 @@ class Fourmi :
         :param quantite: La quantité de phéromones
         :return: Nothing
         """
-        i, j = self.position
+        (i, j) = self.position
         type = self.comportement.choisir_pheromone(self, labyrinthe) if self.comportement.choisir_pheromone(self, labyrinthe) else 0
         if type != 0 : 
             labyrinthe.etat_case[i][j].pheromones[type] += quantite
@@ -162,17 +104,19 @@ class Fourmi :
         if str_direction == "droite":
             return (i, j + 1)
 
-    def decider_comportement (self):
+    def decider_comportement (self, labyrinthe):
         """
         Methode permettant à la fourmi de changer de comportement en fonction des situations qu'elle renctre dans le labyrinthe 
         """
         chemins = self.chemins_possible(labyrinthe)
         if len(chemins) == 1: 
             self.comportement = Retour()
+            print(f"fourmi {self.position} : passage en mode Retour")
 
         if self.comportement == Exploration():
             if self.distance > 20 : 
                 self.comprtement = Suivi()
+                print(f"fourmi {self.position} : passage en mode Suivi")
         
         if self.comportement == Retour():
             chemins = self.chemins_possible(labyrinthe) 
@@ -184,12 +128,23 @@ class Fourmi :
             
             if len(chemins) > 1 :  #la fourmi est sorti du cul de sac 
                 self.comportement == Exploration() 
+                print(f"fourmi {self.position} : passage en mode Exploration")
 
 
 
 
+if __name__ == "__main__": 
+    lab = Labyrinthe(10, 10)
+    lab.creation_labyrinthe()
+    lab.afficher_labyrinthe()
+    f1 = Fourmi((0,0), Exploration())
+    for _ in range (5):
+        f1.se_deplacer(lab)
+        print(f1.position, f1.chemins_possible(lab))
 
-
+    plt.show()
+   
+ 
 
 
 
