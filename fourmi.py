@@ -10,7 +10,7 @@ class Fourmi :
     def __init__(self,position,comportement):
         self.position = position
         self.memoire = []
-        self.comportement = comportement if comportement else Super() #Instance des classes comportement
+        self.comportement = comportement if comportement else Exploration() #Instance des classes comportement
         self.distance = 0
 
     def chemins_possible(self, labyrinthe):
@@ -50,7 +50,7 @@ class Fourmi :
         :param labyrinthe : Le labyrinthe créé avec les cases
         :return: Dictionnaire des positions adjacentes avec la quantité de phéromones attractives
         """
-        L = {"haut": None, "bas": None, "gauche": None, "droite": None}
+        L = {"haut": 0, "bas": 0, "gauche": 0, "droite": 0}
         chemins = self.chemins_possible(labyrinthe)  # liste des directions possible sous forme de str
         for c in chemins:
             i, j = self.conversion_str_int(c)
@@ -90,6 +90,7 @@ class Fourmi :
             type = 0
         if type != 0:
             labyrinthe.etat_case[i][j].pheromones[type] += quantite
+            print(f"J'ai déposé des phero {type} en position {(i,j)}")
 
     def se_deplacer(self,labyrinthe):
         """
@@ -140,7 +141,7 @@ class Fourmi :
             print(f"fourmi {self.position} : passage en mode Retour")
         #Si la fourmi explore et qu'elle ne trouve rien, elle passe en mode suivi
         if isinstance(self.comportement, Exploration):
-            if self.distance > 20:
+            if self.distance > 30:
                 self.comportement = Suivi()
                 print(f"fourmi {self.position} : passage en mode Suivi")
         #Si elle était dans cul de sac
@@ -156,16 +157,14 @@ class Fourmi :
                 print(f"fourmi {self.position} : passage en mode Exploration")
 
         if isinstance(self.comportement, Exploration) or isinstance(self.comportement, Suivi) : 
-            if self.distance >= 1 : 
+            if self.distance >= 70 : 
                 self.comportement = Super()
                 print(f"fourmi {self.position} : passage en mode Super")
 
 
 
 if __name__ == "__main__":
-    L = [1, 2, 3]
-    print(L.pop(0))
-    print(L.pop(0))
+    pass
 
 
 
