@@ -42,7 +42,7 @@ class Exploration(Comportement):
         pheromone = fourmi.percevoir_pheromone(labyrinthe)
         for x in pheromone.keys():
             if pheromone[x] < 0 : 
-                if x in chemins : 
+                if x in chemins and len(chemins) > 1 : 
                     chemins.remove(x)
 
         # Ne pas aller sur la case précédente sauf si cul de sac 
@@ -90,15 +90,22 @@ class Exploration(Comportement):
         
         nourriture = fourmi.percevoir_nourriture(labyrinthe)
         for x in nourriture.keys():
-            if nourriture[x] is True :
-                return "attractif"
+            if nourriture[x] is True : #On a trouvé la nourriture
+                return "attractif" 
+            
+        if fourmi.memoire : 
+            i, j = fourmi.memoire[0]
+            for c in chemins:
+                n, m = fourmi.conversion_str_int(c)
+                if (i, j) == (n, m) and len(chemins) > 1:
+                    chemins.remove(c)
         
         pheromone = fourmi.percevoir_pheromone(labyrinthe)
         for x in pheromone.keys():
             if pheromone[x] > 0:
-                return "attractif"
+                return "attractif"      # on a trouvé un chemin veers la nourriture
             if pheromone[x] < 0 and len(chemins) == 1 : 
-                return "repulsif"
+                return "repulsif"      # On est toujours dans un cul de sac 
             
 
 
@@ -125,7 +132,7 @@ class Suivi(Comportement):
         pheromone = fourmi.percevoir_pheromone(labyrinthe)
         for x in pheromone.keys():
             if pheromone[x] < 0 : 
-                if x in chemins : 
+                if x in chemins and len(chemins) > 1 : 
                     chemins.remove(x)
                     
        # On ne va pas sur la case précédente  
@@ -163,6 +170,11 @@ class Suivi(Comportement):
         :param labyrinthe: Le labyrinthe
         :return: le type de pherome à déposer
         """
+        nourriture = fourmi.percevoir_nourriture(labyrinthe)
+        for x in nourriture.keys():
+            if nourriture[x] is True : #On a trouvé la nourriture
+                return "attractif" 
+            
         chemins = fourmi.chemins_possible(labyrinthe)
         if len(chemins) == 1:  # C'est un cul de sac
             return "repulsif"
@@ -174,6 +186,7 @@ class Suivi(Comportement):
                 n, m = fourmi.conversion_str_int(c)
                 if (i, j) == (n, m) and len(chemins) > 1:
                     chemins.remove(c)
+        
 
         pheromone = fourmi.percevoir_pheromone(labyrinthe)
         for x in pheromone.keys():
