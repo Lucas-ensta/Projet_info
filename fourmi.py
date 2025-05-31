@@ -132,7 +132,7 @@ class Fourmi :
         Methode permettant à la fourmi de changer de comportement en fonction des situations qu'elle renctre dans le labyrinthe
         :param labyrinthe
         """
-        i,j = self.positon 
+        i,j = self.position 
         val_case = labyrinthe.etat_case[i][j].pheromones["attractif"] - labyrinthe.etat_case[i][j].pheromones["repulsif"]
         if isinstance(self.comportement, Super): #on reste en mode super jusqu'a la nourriture 
             return 
@@ -143,12 +143,12 @@ class Fourmi :
             print(f"fourmi {self.position} : passage en mode Retour")
         #Si la fourmi explore et qu'elle ne trouve rien, elle passe en mode suivi
         if isinstance(self.comportement, Exploration):
-            if self.distance > 30:
+            if self.distance > 50:
                 self.comportement = Suivi()
                 print(f"fourmi {self.position} : passage en mode Suivi")
             if val_case > 0 : 
                 self.comportement = Suivi()
-                print(f"fourmi {self.position} : passage en mode Suivi")
+                
         #Si elle était dans cul de sac
         if isinstance(self.comportement, Retour):
             chemins = self.chemins_possible(labyrinthe)
@@ -162,7 +162,7 @@ class Fourmi :
                 print(f"fourmi {self.position} : passage en mode Exploration")
 
         if isinstance(self.comportement, Exploration) or isinstance(self.comportement, Suivi) : 
-            if self.distance >= 70 : 
+            if self.distance >= 100 : 
                 self.comportement = Super()
                 print(f"fourmi {self.position} : passage en mode Super")
 

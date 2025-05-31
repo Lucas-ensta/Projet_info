@@ -38,35 +38,40 @@ class Exploration(Comportement):
 
         chemins = fourmi.chemins_possible(labyrinthe)  # liste des directions possible sous forme de str
 
-        #Ne pas aller sur la case précédente 
+        # Ne pas aller sur les cases repulsives
+        pheromone = fourmi.percevoir_pheromone(labyrinthe)
+        for x in pheromone.keys():
+            if pheromone[x] < 0 : 
+                if x in chemins : 
+                    chemins.remove(x)
+
+        # Ne pas aller sur la case précédente sauf si cul de sac 
         if fourmi.memoire : 
             i, j = fourmi.memoire[0] 
             for c in chemins:
                 n, m = fourmi.conversion_str_int(c)
-                if (i, j) == (n, m) and len(chemins) > 1:
+                if (i, j) == (n, m) and len(chemins) > 1 :
                     chemins.remove(c)
 
+        
 
         chemin_choisi = []
         if len(chemins) == 1:  # Attention cul-de-sac, passer en mode Retour et déposer une phéromnes repulsive
-            
             return chemins[0]
         else:
             for c in chemins:
                 i, j = fourmi.conversion_str_int(c)  # stock l'indice de la case donné par la direction c
                 pheromone = labyrinthe.etat_case[i][j].pheromones  # c'est un dictionnaire avec 2 clés
                 val_case = pheromone["attractif"] - pheromone["repulsif"]  # on regarde l'attractivité de la case
-                if val_case >= 0:  # on ne garde que les cases attractives
-                    chemin_choisi.append((c, val_case))
-            if not chemin_choisi:  # aucun chemin n'est attractif ou neutre, on créer la meme liste que précédemment sans filtrage
-                for c in chemins:
-                    i, j = fourmi.conversion_str_int(c)
-                    pheromone = labyrinthe.etat_case[i][j].pheromones
-                    chemin_choisi.append((c, pheromone["repulsif"]))
-        # On récupère la valeur de case minimale
+                chemin_choisi.append((c, val_case))
+
+
+        # On récupère la valeur de case minimale (donc celles encore non explorées)
         min_val = min(chemin_choisi, key=lambda x: x[1])[1]
+
         # On garde toutes les directions ayant cette valeur
         meilleurs_chemins = [c for c, val in chemin_choisi if val == min_val]
+
         # On en choisit un au hasard
         chemin_choisi_final = random.choice(meilleurs_chemins)
         return chemin_choisi_final
@@ -82,10 +87,19 @@ class Exploration(Comportement):
         chemins = fourmi.chemins_possible(labyrinthe)
         if len(chemins) == 1 : # C'est un cul de sac
             return "repulsif"
+        
         nourriture = fourmi.percevoir_nourriture(labyrinthe)
         for x in nourriture.keys():
             if nourriture[x] is True :
                 return "attractif"
+        
+        pheromone = fourmi.percevoir_pheromone(labyrinthe)
+        for x in pheromone.keys():
+            if pheromone[x] > 0:
+                return "attractif"
+            if pheromone[x] < 0 and len(chemins) == 1 : 
+                return "repulsif"
+            
 
 
 class Suivi(Comportement):
@@ -106,6 +120,14 @@ class Suivi(Comportement):
                 return x
             
         chemins = fourmi.chemins_possible(labyrinthe)  # liste des directions possible sous forme de str
+
+        # Ne pas aller sur les cases repulsives
+        pheromone = fourmi.percevoir_pheromone(labyrinthe)
+        for x in pheromone.keys():
+            if pheromone[x] < 0 : 
+                if x in chemins : 
+                    chemins.remove(x)
+                    
        # On ne va pas sur la case précédente  
         if fourmi.memoire :
             i, j = fourmi.memoire[0] 
@@ -113,6 +135,8 @@ class Suivi(Comportement):
                 n, m = fourmi.conversion_str_int(c)
                 if (i, j) == (n, m) and len(chemins) > 1:
                     chemins.remove(c)
+
+        
 
         chemin_choisi = []
         if len(chemins) == 1:  # il n'ya qu'une direction possible
